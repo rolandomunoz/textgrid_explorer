@@ -20,7 +20,11 @@ import mytextgrid
 
 def read_textgrid(path):
     try:
-        tg = mytextgrid.read_from_file(path, encoding='utf-8')
+        encoding = detect_praat_encoding(path)
+        if encoding == '':
+            encoding = None
+
+        tg = mytextgrid.read_from_file(path, encoding=encoding)
         tg.file_path = path
         for index, tier in enumerate(tg):
             tg.file_path = path
@@ -128,3 +132,56 @@ def create_aligned_tier_table(source_dir, primary_tier_name, secondary_tier_name
 #    pprint(aligned_data)
     table_rows = list(aligned_data.values())
     return headers, table_rows
+
+def detect_praat_encoding(path):
+    """
+    Detect the likely character encoding of a TextGrid file.
+
+    The function first checks for a Byte Order Mark (BOM) to identify
+    UTF-16 encodings. If no BOM is found, it attempts to validate the
+    byte sequence as UTF-8. If UTF-8 validation fails, it defaults to
+    'latin_1' (an assumption based on typical legacy TextGrid formats).
+
+    Parameters
+    ----------
+    path : str or os.PathLike
+        The path to the TextGrid file.
+
+    Returns
+    -------
+    str
+        The detected encoding as a string suitable for use with
+        Python's `open()` function. Possible values are:
+        - 'utf-16le'
+        - 'utf-16be'
+        - 'utf-8'
+        - 'latin_1' (legacy)
+        - 'MacRoman' (legacy, for the future)
+
+    Notes
+    -----
+    Windows -> \r\n
+    Linux and modern Mac -> \n
+    old Mac -> \r
+    """
+    with open(path, 'rb') as f:
+        header = f.readline()
+
+        if header.startswith(b'\xff\xfe'):
+            return 'utf-16le'
+        elif header.startswith(b'\xfe\xff'):
+            return 'utf-16be'
+        else:
+            byte_sequence = f.read()
+            if _is_valid_utf8(byte_sequence):
+                return 'utf-8'
+            else:
+                return 'latin_1'
+    return ''
+
+def _is_valid_utf8(byte_sequence):
+    try:
+        byte_sequence.decode('utf-8')
+        return True
+    except UnicodeError:
+        return False
