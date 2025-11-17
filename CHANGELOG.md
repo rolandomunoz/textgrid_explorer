@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **New project** command imports TextGrid files
+- **New project** command imports TextGrid files in UTF-8, UTF-16 and Latin-1
 - **Find** command
 - **Find and Replace** command
 - **Map annotations**
