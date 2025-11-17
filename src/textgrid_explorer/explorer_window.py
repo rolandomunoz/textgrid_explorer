@@ -28,14 +28,14 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 from PySide6.QtCore import (
-    QItemSelectionRange,
-    QSettings,
-    QSortFilterProxyModel,
     Qt,
     Signal,
     Slot,
+    QSettings,
+    QRegularExpression,
+    QItemSelectionRange,
+    QSortFilterProxyModel,
 )
-
 from PySide6.QtGui import (
     QPixmap,
     QAction,
@@ -572,11 +572,18 @@ class TGExplorer(QMainWindow):
         self.on_enabled_buttons(True)
         self.save_changes_act.setEnabled(False)
 
-    @Slot(int, str, str)
-    def on_filter_rows(self, column_index, column_name, pattern):
+    @Slot(dict)
+    def on_filter_rows(self, dict_):
         proxy_model = self.editor_view.model()
-        proxy_model.setFilterKeyColumn(column_index)
-        proxy_model.setFilterRegularExpression(pattern)
+        if dict_['is_regular_expression']:
+            regex_pattern = QRegularExpression(dict_['pattern'])
+            if not regex_pattern.isValid():
+                return
+            proxy_model.setFilterKeyColumn(dict_['column_index'])
+            proxy_model.setFilterRegularExpression(dict_['pattern'])
+        else:
+            proxy_model.setFilterKeyColumn(dict_['column_index'])
+            proxy_model.setFilterFixedString(dict_['pattern'])
 
     def on_sort_az(self):
         table_view = self.editor_view.table_view
