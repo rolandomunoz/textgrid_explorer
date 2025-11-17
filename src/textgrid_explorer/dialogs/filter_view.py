@@ -25,7 +25,8 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import (
     Qt,
-    Signal
+    Signal,
+    QRegularExpression,
 )
 
 class FilterByDialog(QDialog):
@@ -75,6 +76,9 @@ class FilterByDialog(QDialog):
 
     def on_changed(self):
         dict_ = self.to_dict()
+        regex_pattern = QRegularExpression(dict_['pattern'])
+        if not regex_pattern.isValid():
+            return
         self.filtered_by.emit(
             dict_['column_index'],
             dict_['column_name'],
