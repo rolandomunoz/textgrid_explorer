@@ -18,19 +18,20 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QComboBox,
+    QCheckBox,
     QPushButton,
     QFormLayout,
+    QGroupBox,
     QVBoxLayout,
     QHBoxLayout,
 )
 from PySide6.QtCore import (
     Qt,
     Signal,
-    QRegularExpression,
 )
 
 class FilterByDialog(QDialog):
-    filtered_by = Signal(int, str, str)
+    filtered_by = Signal(dict)
 
     def __init__(self, parent, fields=None, default_value=''):
         super().__init__(parent)
@@ -49,8 +50,11 @@ class FilterByDialog(QDialog):
         self.headers_box.currentIndexChanged.connect(self.on_changed)
 
         self.line_ed = QLineEdit(self.default_value, self)
-        self.line_ed.setPlaceholderText('Regex expression')
+        #self.line_ed.setPlaceholderText('Regex expression')
         self.line_ed.textChanged.connect(self.on_changed)
+
+        self.regex_checkbox = QCheckBox('Regular Expressions')
+        self.regex_checkbox.checkStateChanged.connect(self.on_changed)
 
         # Buttons
         clear_btn = QPushButton('C&lear', self)
@@ -64,26 +68,25 @@ class FilterByDialog(QDialog):
         hbox.addWidget(clear_btn)
         hbox.addWidget(cancel_btn)
 
+        options_box = QVBoxLayout()
+        options_box.addWidget(self.regex_checkbox)
+        other_options_groupbox = QGroupBox('Other options')
+        other_options_groupbox.setLayout(options_box)
+
         # Main Layout
         layout = QVBoxLayout()
         layout.addWidget(QLabel('Select column:'))
         layout.addWidget(self.headers_box)
         layout.addWidget(QLabel('Search pattern:'))
         layout.addWidget(self.line_ed)
+        layout.addWidget(other_options_groupbox)
         layout.addLayout(hbox)
 
         self.setLayout(layout)
 
     def on_changed(self):
         dict_ = self.to_dict()
-        regex_pattern = QRegularExpression(dict_['pattern'])
-        if not regex_pattern.isValid():
-            return
-        self.filtered_by.emit(
-            dict_['column_index'],
-            dict_['column_name'],
-            dict_['pattern'],
-        )
+        self.filtered_by.emit(dict_)
 
     def on_clear(self):
         self.line_ed.setText('')
@@ -105,5 +108,6 @@ class FilterByDialog(QDialog):
             'column_index': self.headers_box.currentIndex(),
             'column_name': self.headers_box.currentText(),
             'pattern': self.line_ed.text(),
+            'is_regular_expression': self.regex_checkbox.isChecked(),
         }
         return dict_
