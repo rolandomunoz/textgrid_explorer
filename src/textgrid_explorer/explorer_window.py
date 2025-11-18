@@ -471,7 +471,7 @@ class TGExplorer(QMainWindow):
 
         sound_extensions = settings.value('praat_sound_extensions').split(';')
         sound_path = ''
-        textgrid_path = item.file_path
+        textgrid_path = item.textgrid().file_path
         for sound_ext in sound_extensions:
             sound_path_tmp = textgrid_path.with_suffix(sound_ext)
             if sound_path_tmp.is_file():
@@ -503,7 +503,7 @@ class TGExplorer(QMainWindow):
             textgrid_path,
             sound_path,
             str(maximize_audibility),
-            str(item.tier.index + 1),
+            str(item.tier().index + 1),
             str(item.xmin),
             str(item.xmax)
         ]
@@ -621,10 +621,11 @@ class TGExplorer(QMainWindow):
             src_model.setData(index, False, Qt.ItemDataRole.ForegroundRole)
 
             item = index.data(Qt.ItemDataRole.UserRole)
-            if item.file_path in tmp_paths:
+            textgrid = item.textgrid()
+            if textgrid.file_path in tmp_paths:
                 continue
-            item.textgrid.write(item.file_path) #Save path
-            tmp_paths.add(item.file_path)
+            textgrid.write(textgrid.file_path) #Save path
+            tmp_paths.add(textgrid.file_path)
         self.editor_view.clear_modified_indexes()
 
     def on_preferences(self):
