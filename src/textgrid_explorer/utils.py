@@ -28,12 +28,8 @@ def read_textgrid(path):
         tg.file_path = path
         for index, tier in enumerate(tg):
             tg.file_path = path
-            tg.parent = tg
             tier.index = index
             for item in tier:
-                item.file_path =path
-                item.tier = tier
-                item.textgrid = tg
                 item.modified = False
         return tg
     except Exception as e:
