@@ -24,7 +24,7 @@ def read_textgrid(path):
         if encoding == '':
             encoding = None
 
-        tg = mytextgrid.read_from_file(path, encoding=encoding)
+        tg = mytextgrid.read_textgrid(path, encoding=encoding)
         tg.file_path = path
         for index, tier in enumerate(tg):
             tg.file_path = path
